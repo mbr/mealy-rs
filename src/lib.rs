@@ -5,6 +5,12 @@ pub trait MealyAutomaton: Sized {
     type Output;
 
     fn transition(self, input: Self::Input) -> (Self, Self::Output);
+    fn failed(&self) -> bool {
+        false
+    }
+    fn done(&self) -> bool {
+        false
+    }
 }
 
 #[cfg(test)]
