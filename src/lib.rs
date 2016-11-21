@@ -23,9 +23,3 @@ pub trait MealyAutomaton: Sized {
         self.failed() || self.done()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {}
-}
