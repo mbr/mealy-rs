@@ -1,0 +1,7 @@
+[package]
+name = "mealy"
+version = "0.1.0"
+authors = ["Marc Brinkmann <git@marcbrinkmann.de>"]
+description = "The world's smallest crate."
+
+[dependencies]
