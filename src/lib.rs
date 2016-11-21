@@ -1,3 +1,5 @@
+//! Docs pending. Sorry.
+
 #![no_std]
 
 pub trait MealyAutomaton: Sized {

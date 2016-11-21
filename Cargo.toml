@@ -2,6 +2,10 @@
 name = "mealy"
 version = "0.1.0"
 authors = ["Marc Brinkmann <git@marcbrinkmann.de>"]
-description = "The world's smallest crate."
+description = "Low-overhead state machine interface"
+readme = "README.md"
+license = "MIT"
+documentation = "https://docs.rs/mealy"
+repository = "https://github.com/mbr/mealy-rs"
 
 [dependencies]
