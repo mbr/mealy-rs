@@ -12,10 +12,13 @@ pub trait MealyMachine: Sized {
     type Error;
     type CalcResult;
 
-    fn transition(self, Self::Input) -> Result<Step<Self, Self::Output, Self::CalcResult>, Self::Error>;
+    fn transition(self,
+                  Self::Input)
+                  -> Result<Step<Self, Self::Output, Self::CalcResult>, Self::Error>;
 
     fn and_then<M>(self, m: M) -> AndThen<Self, M>
-        where M : MealyMachine<Input = Self::Input, Output = Self::Output, Error = Self::Error> {
+        where M: MealyMachine<Input = Self::Input, Output = Self::Output, Error = Self::Error>
+    {
         AndThen::Machine1(self, m)
     }
 }
@@ -38,7 +41,9 @@ impl<M1, M2> MealyMachine for AndThen<M1, M2>
     type Error = M1::Error;
     type CalcResult = M2::CalcResult;
 
-    fn transition(self, input: Self::Input) -> Result<Step<Self, Self::Output, Self::CalcResult>, Self::Error> {
+    fn transition(self,
+                  input: Self::Input)
+                  -> Result<Step<Self, Self::Output, Self::CalcResult>, Self::Error> {
         match self {
             AndThen::Machine1(m1, m2) => {
                 match m1.transition(input)? {
@@ -50,18 +55,14 @@ impl<M1, M2> MealyMachine for AndThen<M1, M2>
                     }
                 }
             }
-            _ => unimplemented!()
-//             AndThen::Machine2(m2) => {
-//                 let (new_m2, step) = m2.transition(input)?;
-
-//                 match step {
-//                     Step::NotReady(output) => {
-//                         Ok((AndThen::Machine2(new_m2), Step::NotReady(output)))
-//                     }
-//                     Step::Done(output, cresult) => Ok((AndThen::Done, Step::Done(output, cresult))),
-//                 }
-//             }
-//             AndThen::Done => unimplemented!(),
+            AndThen::Machine2(m2) => {
+                match m2.transition(input)? {
+                    Step::NotReady(new_m2, output) => {
+                        Ok(Step::NotReady(AndThen::Machine2(new_m2), output))
+                    }
+                    Step::Done(output, cresult) => Ok(Step::Done(output, cresult)),
+                }
+            }
         }
     }
 }
