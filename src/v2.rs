@@ -1,6 +1,6 @@
 pub enum Step<M, O, C> {
     NotReady(M, O),
-    Done(O, C),
+    Done(C),
 }
 
 /// Shorthand:
@@ -50,9 +50,7 @@ impl<M1, M2> MealyMachine for AndThen<M1, M2>
                     Step::NotReady(new_m1, output) => {
                         Ok(Step::NotReady(AndThen::Machine1(new_m1, m2), output))
                     }
-                    Step::Done(output, cresult) => {
-                        Ok(Step::NotReady(AndThen::Machine2(m2), output))
-                    }
+                    Step::Done(cresult) => Ok(Step::NotReady(AndThen::Machine2(m2), None)),
                 }
             }
             AndThen::Machine2(m2) => {
@@ -60,7 +58,7 @@ impl<M1, M2> MealyMachine for AndThen<M1, M2>
                     Step::NotReady(new_m2, output) => {
                         Ok(Step::NotReady(AndThen::Machine2(new_m2), output))
                     }
-                    Step::Done(output, cresult) => Ok(Step::Done(output, cresult)),
+                    Step::Done(cresult) => Ok(Step::Done(cresult)),
                 }
             }
         }
