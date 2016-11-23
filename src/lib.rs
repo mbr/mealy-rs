@@ -3,6 +3,7 @@
 #![no_std]
 
 pub mod timeout;
+pub mod v2;
 
 pub trait MealyAutomaton: Sized {
     type Input;
