@@ -16,25 +16,28 @@ pub trait MealyMachine: Sized {
                   Self::Input)
                   -> Result<Step<Self, Option<Self::Output>, Self::CalcResult>, Self::Error>;
 
-    fn and_then<M>(self, m: M) -> AndThen<Self, M>
-        where M: MealyMachine<Input = Self::Input, Output = Self::Output, Error = Self::Error>
+    fn and_then<M, F>(self, m: M, f: F) -> AndThen<Self, M, F>
+        where M: MealyMachine<Input = Self::Input, Output = Self::Output, Error = Self::Error>,
+              F: FnOnce(Self::CalcResult) -> M
     {
-        AndThen::Machine1(self, m)
+        AndThen::Machine1(self, f)
     }
 }
 
-pub enum AndThen<M1, M2>
+pub enum AndThen<M1, M2, F>
     where M1: MealyMachine,
-          M2: MealyMachine<Input = M1::Input, Output = M1::Output, Error = M1::Error>
+          M2: MealyMachine<Input = M1::Input, Output = M1::Output, Error = M1::Error>,
+          F: FnOnce(M1::CalcResult) -> M2
 {
-    Machine1(M1, M2),
+    Machine1(M1, F),
     Machine2(M2),
 }
 
 
-impl<M1, M2> MealyMachine for AndThen<M1, M2>
+impl<M1, M2, F> MealyMachine for AndThen<M1, M2, F>
     where M1: MealyMachine,
-          M2: MealyMachine<Input = M1::Input, Output = M1::Output, Error = M1::Error>
+          M2: MealyMachine<Input = M1::Input, Output = M1::Output, Error = M1::Error>,
+          F: FnOnce(M1::CalcResult) -> M2
 {
     type Input = M1::Input;
     type Output = M1::Output;
@@ -45,12 +48,12 @@ impl<M1, M2> MealyMachine for AndThen<M1, M2>
                   input: Self::Input)
                   -> Result<Step<Self, Option<Self::Output>, Self::CalcResult>, Self::Error> {
         match self {
-            AndThen::Machine1(m1, m2) => {
+            AndThen::Machine1(m1, f) => {
                 match m1.transition(input)? {
                     Step::NotReady(new_m1, output) => {
-                        Ok(Step::NotReady(AndThen::Machine1(new_m1, m2), output))
+                        Ok(Step::NotReady(AndThen::Machine1(new_m1, f), output))
                     }
-                    Step::Done(cresult) => Ok(Step::NotReady(AndThen::Machine2(m2), None)),
+                    Step::Done(cresult) => Ok(Step::NotReady(AndThen::Machine2(f(cresult)), None)),
                 }
             }
             AndThen::Machine2(m2) => {
