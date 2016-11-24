@@ -16,7 +16,7 @@ pub trait MealyMachine: Sized {
                   Self::Input)
                   -> AResult<Self>;
 
-    fn and_then<M, F>(self, m: M, f: F) -> AndThen<Self, M, F>
+    fn and_then<M, F>(self, f: F) -> AndThen<Self, M, F>
         where M: MealyMachine<Input = Self::Input, Output = Self::Output, Error = Self::Error>,
               F: FnOnce(Self::CalcResult) -> M
     {
