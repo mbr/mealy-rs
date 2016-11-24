@@ -40,7 +40,7 @@ impl<M1, M2, F> MealyMachine for AndThen<M1, M2, F>
           F: FnOnce(M1::CalcResult) -> M2
 {
     type Input = M1::Input;
-    type Output = M1::Output;
+    type Output = Option<M1::Output>;
     type Error = M1::Error;
     type CalcResult = M2::CalcResult;
 
@@ -49,7 +49,7 @@ impl<M1, M2, F> MealyMachine for AndThen<M1, M2, F>
             AndThen::Machine1(m1, f) => {
                 match m1.transition(input)? {
                     Step::NotReady(new_m1, output) => {
-                        Ok(Step::NotReady(AndThen::Machine1(new_m1, f), output))
+                        Ok(Step::NotReady(AndThen::Machine1(new_m1, f), Some(output)))
                     }
                     Step::Done(cresult) => Ok(Step::NotReady(AndThen::Machine2(f(cresult)), None)),
                 }
@@ -57,7 +57,7 @@ impl<M1, M2, F> MealyMachine for AndThen<M1, M2, F>
             AndThen::Machine2(m2) => {
                 match m2.transition(input)? {
                     Step::NotReady(new_m2, output) => {
-                        Ok(Step::NotReady(AndThen::Machine2(new_m2), output))
+                        Ok(Step::NotReady(AndThen::Machine2(new_m2), Some(output)))
                     }
                     Step::Done(cresult) => Ok(Step::Done(cresult)),
                 }
