@@ -4,7 +4,7 @@ pub enum Step<M, O, C> {
 }
 
 /// Shorthand:
-type AResult<M: MealyMachine> = Result<Step<M, Option<M::Output>, M::CalcResult>, M::Error>;
+pub type AResult<M: MealyMachine> = Result<Step<M, M::Output, M::CalcResult>, M::Error>;
 
 pub trait MealyMachine: Sized {
     type Input;
@@ -14,7 +14,7 @@ pub trait MealyMachine: Sized {
 
     fn transition(self,
                   Self::Input)
-                  -> Result<Step<Self, Option<Self::Output>, Self::CalcResult>, Self::Error>;
+                  -> AResult<Self>;
 
     fn and_then<M, F>(self, m: M, f: F) -> AndThen<Self, M, F>
         where M: MealyMachine<Input = Self::Input, Output = Self::Output, Error = Self::Error>,
@@ -44,9 +44,7 @@ impl<M1, M2, F> MealyMachine for AndThen<M1, M2, F>
     type Error = M1::Error;
     type CalcResult = M2::CalcResult;
 
-    fn transition(self,
-                  input: Self::Input)
-                  -> Result<Step<Self, Option<Self::Output>, Self::CalcResult>, Self::Error> {
+    fn transition(self, input: Self::Input) -> AResult<Self> {
         match self {
             AndThen::Machine1(m1, f) => {
                 match m1.transition(input)? {
