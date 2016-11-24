@@ -3,6 +3,19 @@ pub enum Step<M, O, C> {
     Done(C),
 }
 
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+// könnte man auch weglassen und `try_next_state` könnte im fehlerfall direkt C zurückgeben
+pub struct UnexpectedEndOfStateMachine<T>(T);
+
+impl<M, O, C> Step<M, O, C> {
+    pub fn try_next_state(self) -> Result<(M, O), UnexpectedEndOfStateMachine<C>> {
+        match self {
+            Step::Done(val) => Err(UnexpectedEndOfStateMachine(val)),
+            Step::NotReady(t, o) => Ok((t, o)),
+        }
+    }
+}
+
 /// Shorthand:
 pub type AResult<M: MealyMachine> = Result<Step<M, M::Output, M::CalcResult>, M::Error>;
 
